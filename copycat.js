@@ -14,7 +14,7 @@ Crafty.init(640,640, document.getElementById('game'));
 let billie;
 
 var assetsObj = {
-  /* MP3 CAN NOT BE PLAYED ON SAFARI
+  /* MP3 CAN NOT BE PLAYED ON SAFARI PLAY IT DIFFERENTLY
   "audio": {
     "soundtrack": ["assets/copycat.mp3"]
   },
