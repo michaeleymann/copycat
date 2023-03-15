@@ -6,6 +6,7 @@ scrollSpeed = 1;
 cols = ["#AAA", "#888","#CCC","#DDD"];
 score = 0;
 time = 0;
+mobile = false;
 
 
 Crafty.init(640,640, document.getElementById('game'));
@@ -13,6 +14,9 @@ Crafty.init(640,640, document.getElementById('game'));
 let billie;
 
 var assetsObj = {
+  "audio": {
+    "soundtrack": ["assets/copycat.mp3"]
+  },
   "sprites": {
       // This spritesheet has 16 images, in a 2 by 8 grid
       // The dimensions are 832x228
@@ -353,17 +357,50 @@ function generateWorld(){
   }
 }
 
+function scaleIfDisplayIsSmall() {
+  if (window.innerWidth < 640 ) {
+    mySize = window.innerWidth;
+    document.getElementById("wrapper").style.height = mySize + "px"
+    document.getElementById("wrapper").style.width = mySize + "px"
+    Crafty.viewport.init(mySize,mySize, document.getElementById("game"))
+    Crafty.viewport.scale(mySize/640);
+  }
+};
+ 
+
 // ---------- SCENES ----------
 
 // Loading Scene
 Crafty.scene("loading", function() {
+  Crafty.e("2D, Canvas, Text").text(". . . L O A D I N G . . .")
+  .textFont({ family: 'Arial', size:"16px"})
+  .textAlign("center")
+  .attr({x: 320, y: 300})
   Crafty.load(assetsObj, function() {
-    Crafty.scene("title"); 
+    Crafty.scene("title");
   });
 });
 
+// Title Scene
 Crafty.scene("title", function(){
+  scaleIfDisplayIsSmall()
   Crafty.e("2D, Canvas, Image, Mouse").image("assets/title.png")
+  Crafty.e("2D, Canvas, Image, Mouse")
+  .image("assets/phone.png")
+  .attr({x: 470, y: 490})
+  .bind('KeyDown', function(e) {
+    mobile = true;
+    if(e.key == Crafty.keys.SPACE) {
+      Crafty.scene("main")
+    }
+  } )
+  .bind("MouseDown", function(){
+    mobile = true;
+    Crafty.scene("main")
+  })
+  Crafty.e("2D, Canvas, Image, Mouse")
+  .image("assets/computer.png")
+  .attr({x: 75, y: 480})
   .bind('KeyDown', function(e) {
     if(e.key == Crafty.keys.SPACE) {
       Crafty.scene("main")
@@ -376,22 +413,18 @@ Crafty.scene("title", function(){
 
 // Main Scene --- MAIN SCENE!!! ---
 Crafty.scene("main", function(){
-  if (window.innerWidth < 640 ) {
-    mySize = window.innerWidth;
-    document.getElementById("wrapper").style.height = mySize + "px"
-    document.getElementById("wrapper").style.width = mySize + "px"
-    Crafty.viewport.init(mySize,mySize, document.getElementById("game"))
-    Crafty.viewport.scale(mySize/640);
-  }
+  scaleIfDisplayIsSmall()
  
     
-
+    Crafty.audio.play("soundtrack")
     generateWorld();
     makeBillie();
     Crafty.e("Score")
+    if (mobile) {
     Crafty.e("MobileLeft")
     Crafty.e("MobileRight")
     Crafty.e("MobileSlay")
+    }
     setInterval(function(){makeEnemy()},700 + Math.floor(Math.random() * 500 ) )
 
     //timer just for development, delete later
