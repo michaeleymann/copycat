@@ -362,16 +362,29 @@ Crafty.scene("loading", function() {
 });
 
 Crafty.scene("title", function(){
-  Crafty.e("2D, Canvas, Image").image("assets/title.png")
+  Crafty.e("2D, Canvas, Image, Mouse").image("assets/title.png")
   .bind('KeyDown', function(e) {
     if(e.key == Crafty.keys.SPACE) {
       Crafty.scene("main")
     }
   } )
+  .bind("MouseDown", function(){
+    Crafty.scene("main")
+  })
 })
 
 // Main Scene --- MAIN SCENE!!! ---
 Crafty.scene("main", function(){
+  if (window.innerWidth < 640 ) {
+    mySize = window.innerWidth;
+    document.getElementById("wrapper").style.height = mySize + "px"
+    document.getElementById("wrapper").style.width = mySize + "px"
+    Crafty.viewport.init(mySize,mySize, document.getElementById("game"))
+    Crafty.viewport.scale(mySize/640);
+  }
+ 
+    
+
     generateWorld();
     makeBillie();
     Crafty.e("Score")
