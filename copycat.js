@@ -14,9 +14,11 @@ Crafty.init(640,640, document.getElementById('game'));
 let billie;
 
 var assetsObj = {
+  /* MP3 CAN NOT BE PLAYED ON SAFARI
   "audio": {
     "soundtrack": ["assets/copycat.mp3"]
   },
+  */
   "sprites": {
       // This spritesheet has 16 images, in a 2 by 8 grid
       // The dimensions are 832x228
@@ -416,7 +418,7 @@ Crafty.scene("main", function(){
   scaleIfDisplayIsSmall()
  
     
-    Crafty.audio.play("soundtrack")
+    //Crafty.audio.play("soundtrack")
     generateWorld();
     makeBillie();
     Crafty.e("Score")
