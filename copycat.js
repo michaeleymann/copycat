@@ -1,5 +1,21 @@
 // https://craftyjs.com/documentation/components.html
+const URL = 'assets/copycat.mp3';  
+const context = new AudioContext();
+let billieBuffer;
 
+window.fetch(URL)
+  .then(response => response.arrayBuffer())
+  .then(arrayBuffer => context.decodeAudioData(arrayBuffer, audioBuffer => {
+    billieBuffer = audioBuffer;
+  }, error => console.error(error)))
+
+
+  function play(audioBuffer) {
+    const source = context.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(context.destination);
+    source.start();
+  }
 
 // SOME GAME VARIABLES
 scrollSpeed = 1;
@@ -390,25 +406,16 @@ Crafty.scene("title", function(){
   Crafty.e("2D, Canvas, Image, Mouse")
   .image("assets/phone.png")
   .attr({x: 470, y: 490})
-  .bind('KeyDown', function(e) {
-    mobile = true;
-    if(e.key == Crafty.keys.SPACE) {
-      Crafty.scene("main")
-    }
-  } )
   .bind("MouseDown", function(){
+    play(billieBuffer);
     mobile = true;
     Crafty.scene("main")
   })
   Crafty.e("2D, Canvas, Image, Mouse")
   .image("assets/computer.png")
   .attr({x: 75, y: 480})
-  .bind('KeyDown', function(e) {
-    if(e.key == Crafty.keys.SPACE) {
-      Crafty.scene("main")
-    }
-  } )
   .bind("MouseDown", function(){
+    play(billieBuffer);
     Crafty.scene("main")
   })
 })
