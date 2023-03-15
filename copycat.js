@@ -119,6 +119,7 @@ Crafty.c("MobileSlay", {
     })
     this.bind("MouseUp", function(){
       billie.state.left = billie.state.right = billie.slay = false;
+      billie._speed = ({x: 0, y:0})
     })
   }
 })
