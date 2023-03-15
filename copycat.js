@@ -54,6 +54,74 @@ var assetsObj = {
 
 // ---------- FUNCTIONS & COMPONENTS ----------
 
+Crafty.c("MobileLeft", {
+    init: function(){
+      this.addComponent("2D, Canvas, Color, Mouse")
+      this.x = 30
+      this.y = 540
+      this.z = 1
+      this.w = 64
+      this.h = 64
+      this.color("#F0F")
+      this.bind("MouseDown", function(){
+        console.log("clicked")
+        billie.state.left = billie.state.right = billie.slay = false;
+        billie.state.left = true;
+        billie._speed = ({x: -1, y:0})
+        billie._direction = ({x:180, y:0})
+      })
+      this.bind("MouseUp", function(){
+        billie.state.left = billie.state.right = billie.slay = false;
+        billie._speed = ({x: 0, y:0})
+        billie._direction = ({x:180, y:0})
+      })
+    }
+})
+
+Crafty.c("MobileRight", {
+  init: function(){
+    this.addComponent("2D, Canvas, Color, Mouse")
+    this.x = 500
+    this.y = 540
+    this.z = 1
+    this.w = 64
+    this.h = 64
+    this.color("#F0F")
+    this.bind("MouseDown", function(){
+      console.log("clicked")
+      billie.state.left = billie.state.right = billie.slay = false;
+      billie.state.right = true;
+      billie._speed = ({x: 1, y:0})
+      billie._direction = ({x:180, y:0})
+    })
+    this.bind("MouseUp", function(){
+      billie.state.left = billie.state.right = billie.slay = false;
+      billie._speed = ({x: 0, y:0})
+      billie._direction = ({x:180, y:0})
+    })
+  }
+})
+
+Crafty.c("MobileSlay", {
+  init: function(){
+    this.addComponent("2D, Canvas, Color, Mouse")
+    this.x = 280
+    this.y = 540
+    this.z = 1
+    this.w = 64
+    this.h = 64
+    this.color("#F0F")
+    this.bind("MouseDown", function(){
+      console.log("clicked")
+      billie.state.left = billie.state.right = billie.slay = false;
+      billie.state.slay = true;
+      billie.slayCounter = 1;
+    })
+    this.bind("MouseUp", function(){
+      billie.state.left = billie.state.right = billie.slay = false;
+    })
+  }
+})
 /**
 * Adds scrolling behaviour to entity
 */
@@ -307,6 +375,9 @@ Crafty.scene("main", function(){
     generateWorld();
     makeBillie();
     Crafty.e("Score")
+    Crafty.e("MobileLeft")
+    Crafty.e("MobileRight")
+    Crafty.e("MobileSlay")
     setInterval(function(){makeEnemy()},700 + Math.floor(Math.random() * 500 ) )
 
     //timer just for development, delete later
