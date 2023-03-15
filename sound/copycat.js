@@ -7,11 +7,15 @@
   let yodelBuffer;
 
   window.fetch(URL)
-    .then(response => response.arrayBuffer())
-    .then(arrayBuffer => context.decodeAudioData(arrayBuffer))
-    .then(audioBuffer => {
-      yodelBuffer = audioBuffer;
-    });
+  .then(response => response.arrayBuffer())
+  .then(arrayBuffer => context.decodeAudioData(arrayBuffer, 
+                                               audioBuffer => {
+                                                 yodelBuffer = audioBuffer;
+                                                }, 
+                                               error => 
+                                               console.error(error)
+                                              ))
+
 
   function play(audioBuffer) {
     const source = context.createBufferSource();
