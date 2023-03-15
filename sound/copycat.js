@@ -3,7 +3,6 @@
   const URL = 'copycat.mp3';
     
   const context = new AudioContext();
-  const playButton = document.querySelector('#play');
   
   let yodelBuffer;
 
@@ -11,11 +10,8 @@
     .then(response => response.arrayBuffer())
     .then(arrayBuffer => context.decodeAudioData(arrayBuffer))
     .then(audioBuffer => {
-      playButton.disabled = false;
       yodelBuffer = audioBuffer;
     });
-    
-    playButton.onclick = () => play(yodelBuffer);
 
   function play(audioBuffer) {
     const source = context.createBufferSource();
