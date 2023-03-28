@@ -1,4 +1,19 @@
-// https://craftyjs.com/documentation/components.html
+/*
+Improvements To Do
+Bind all the enemy stuff to the player, use the collision object do determine whicht objects to destroy
+Make Better Enemie Ausweichfunktion (Line 325)
+*/
+
+
+// SOME GAME VARIABLES
+var cols = ["#AAA", "#888","#CCC","#DDD"];
+var score = 0;
+var time = 0;
+var mobile = false;
+var enemyTrigger;
+
+
+// SOUND STUFF
 const URL = 'assets/copycat.mp3';  
 const context = new AudioContext();
 let billieBuffer;
@@ -16,19 +31,14 @@ window.fetch(URL)
     source.connect(context.destination);
     source.start();
   }
+// END SOUND STUFF
 
-// SOME GAME VARIABLES
-scrollSpeed = 1;
-cols = ["#AAA", "#888","#CCC","#DDD"];
-score = 0;
-time = 0;
-mobile = false;
-
-
+//START CRAFTY STUFF
 Crafty.init(640,640, document.getElementById('game'));
 
 let billie;
 
+// LOAD ALL THE NICE STUFF
 var assetsObj = {
   /* MP3 CAN NOT BE PLAYED ON SAFARI PLAY IT DIFFERENTLY
   "audio": {
@@ -73,9 +83,9 @@ var assetsObj = {
   }
 };
 
-
 // ---------- FUNCTIONS & COMPONENTS ----------
 
+// Mobile Buttons
 Crafty.c("MobileLeft", {
     init: function(){
       this.addComponent("2D, Canvas, Color, Mouse")
@@ -86,7 +96,6 @@ Crafty.c("MobileLeft", {
       this.h = 64
       this.color("#F0F")
       this.bind("MouseDown", function(){
-        console.log("clicked")
         billie.state.left = billie.state.right = billie.slay = false;
         billie.state.left = true;
         billie._speed = ({x: -1, y:0})
@@ -99,7 +108,6 @@ Crafty.c("MobileLeft", {
       })
     }
 })
-
 Crafty.c("MobileRight", {
   init: function(){
     this.addComponent("2D, Canvas, Color, Mouse")
@@ -110,7 +118,6 @@ Crafty.c("MobileRight", {
     this.h = 64
     this.color("#F0F")
     this.bind("MouseDown", function(){
-      console.log("clicked")
       billie.state.left = billie.state.right = billie.slay = false;
       billie.state.right = true;
       billie._speed = ({x: 1, y:0})
@@ -123,7 +130,6 @@ Crafty.c("MobileRight", {
     })
   }
 })
-
 Crafty.c("MobileSlay", {
   init: function(){
     this.addComponent("2D, Canvas, Color, Mouse")
@@ -134,7 +140,6 @@ Crafty.c("MobileSlay", {
     this.h = 64
     this.color("#F0F")
     this.bind("MouseDown", function(){
-      console.log("clicked")
       billie.state.left = billie.state.right = billie.slay = false;
       billie.state.slay = true;
       billie.slayCounter = 1;
@@ -145,24 +150,28 @@ Crafty.c("MobileSlay", {
     })
   }
 })
+
+// Components
 /**
 * Adds scrolling behaviour to entity
 */
+//OK THIS IS SOME SPAGHETTI CODE SHIT, SCROLLING GENERATES LINES
+// I MIGHT WANNA CHANGE THIS (OR NOT)
 Crafty.c("Scrolling", {
 
-  Scrolling: function(){
+  Scrolling: function(){ //take a as true/false
+  
   this.bind("UpdateFrame", function(eventData){
     if (this.y < -122 ) {
-      if (this.x == 0) { // weird way to onlie make one new line and not 10
+      if (this.x == 0) { // weird way to only make one new line and not 10
         makeNewLine()}
       this.destroy()
     }
-    this.y = this.y - eventData.dt * scrollSpeed/10  
+    this.y = this.y - eventData.dt * this.scrollSpeed/10  
   });
   return this;
   }
-  }
-)
+})
 
 Crafty.c("Score", {
   init: function(){
@@ -176,6 +185,33 @@ Crafty.c("Score", {
   }
 })
 
+Crafty.c("Bubble", {
+  init: function(){
+    startTime = 1000 + Math.random()*3000
+    spriteNumber = Math.floor(Math.random()*7) //xPos Bubble Spritesheet
+    this.attach(Crafty.e("2D, Canvas, bubble_1, SpriteAnimation, Scrolling, Enemy, Collision, selfDestroy")
+      .attr({x: this.x, y: this.y-64, z:1, w:64, h:64})
+      .reel("none", 1000, 6,0,1) //empty sprite
+      .reel("catcall", 1000, spriteNumber, 0, 1)
+      .reel("0", 1000, 0, 2, 1)
+      .reel("1", 1000, 1, 2, 1)
+      .reel("2", 1000, 2, 2, 1)
+      .reel("3", 1000, 3, 2, 1)
+      .reel("4", 1000, 4, 2, 1)
+      .reel("5", 1000, 5, 2, 1)
+      .bind("EnterFrame", function(){
+        setTimeout(()=>this.animate("catcall"),startTime)
+        if ( this._parent.pushed > 15 ) {this.animate("5");console.log("ACHIEVEMENT: MALE TEARS")}
+        else if ( this._parent.pushed > 12 ) this.animate("4")
+        else if ( this._parent.pushed > 9 ) this.animate("3")
+        else if ( this._parent.pushed > 6 ) this.animate("2")
+        else if ( this._parent.pushed > 3 ) this.animate("1")
+        else if ( this._parent.pushed > 0 ) this.animate("0")
+      })
+    )
+  }
+})
+// Functions
 /**
  * Returns Billie
  */
@@ -188,20 +224,22 @@ billie = Crafty.e('2D, Canvas, walker_start, SpriteAnimation, Twoway, Collision,
   slayCounter: 0
 })
 .twoway(200)
-.collision(26,16,26,48,48,48,48,16)
+.collision(26,16,26,48,48,48,48,16) 
 .reel("walk", 1000, 0, 10, 8)
 .reel("walkLeft", 1000, 0, 9, 8)
 .reel("walkRight", 1000, 0, 11, 8)
 .reel("slay", 1000, 0, 14, 6)
+.reel("slayRight", 1000, 0, 15, 6)
+.reel("slayLeft", 1000, 0, 13, 6)
 .bind('KeyDown', function(e) {
   if(e.key == Crafty.keys.LEFT_ARROW) {
-    this.state.left = this.state.right = this.slay = false;
+    this.state.left = this.state.right = false;
     this.state.left = true;
   } else if (e.key == Crafty.keys.RIGHT_ARROW) {
-    this.state.left = this.state.right = this.slay = false;
+    this.state.left = this.state.right = false;
     this.state.right = true;
   } else if (e.key == Crafty.keys.SPACE) {
-    this.state.left = this.state.right = this.slay = false;
+    //this.state.left = this.state.right = this.slay = false;
     //this.state.slay = true;
     this.slayCounter = 1
   }
@@ -217,33 +255,52 @@ billie = Crafty.e('2D, Canvas, walker_start, SpriteAnimation, Twoway, Collision,
 .bind('EnterFrame', function(){
   this.animationSpeed = 1;
   
+  // IS BILLIE CURRENTLY SLAYING??
   if (this.slayCounter > 0 ) {
     this.animationSpeed = 4
     this.state.slay = true;
-    if (!this.isPlaying("slay")) this.animate("slay",-1)
-    else if (this.isPlaying("slay")) this.resumeAnimation("slay",-1)
+
+    //play proper animation depending on if walking left, right or straight
+    if (this.state.left) {
+      if (!this.isPlaying("slayLeft")) this.animate("slayLeft",-1)
+      else if (this.isPlaying("slayLeft")) this.resumeAnimation("slayLeft",-1)
+    } else if (this.state.right){
+      if (!this.isPlaying("slayRight")) this.animate("slayRight",-1)
+      else if (this.isPlaying("slayRight")) this.resumeAnimation("slayRight",-1)
+    } else {
+      if (!this.isPlaying("slay")) this.animate("slay",-1)
+      else if (this.isPlaying("slay")) this.resumeAnimation("slay",-1)
+    }
+    
     if (this.slayCounter < 18) {
       this.slayCounter +=1
     } else {
       this.slayCounter = 0;
       this.state.slay = false;
     }
+  } else {
+    if (this.state.left && !this.isPlaying("walkLeft")) this.animate("walkLeft",-1)
+    else if (this.state.left  && this.isPlaying("walkLeft")) this.resumeAnimation("walkLeft", -1)
+    else if (this.state.right && !this.isPlaying("walkRight")) this.animate("walkRight", -1)
+    else if (this.state.right  && this.isPlaying("walkRight")) this.resumeAnimation ("walkRight", -1)
+    else if (this.isPlaying("walk")) this.resumeAnimation("walk", -1)
+    else this.animate("walk",-1)
   }
+  
 
-  if (this.state.left && !this.isPlaying("walkLeft")) this.animate("walkLeft",-1)
-  else if (this.state.left  && this.isPlaying("walkLeft")) this.resumeAnimation("walkLeft", -1)
-  else if (this.state.right && !this.isPlaying("walkRight")) this.animate("walkRight", -1)
-  else if (this.state.right  && this.isPlaying("walkRight")) this.resumeAnimation ("walkRight", -1)
-  else if (this.isPlaying("walk")) this.resumeAnimation("walk", -1)
-  else if (!this.state.slay) this.animate("walk",-1)
 })
-.onHit("RightHouse", function() {
-  x = this.x;
-  this.x -= 4;
-})
-.onHit("LeftHouse", function() {
-  x = this.x;
-  this.x += 4;
+.bind('Move', function(evt) { // after player moved
+  var hitDatas, hitData;
+  if ((hitDatas = this.hit('Solid'))) { // check for collision with walls
+    hitData = hitDatas[0]; // resolving collision for just one collider
+    if (hitData.type === 'SAT') { // SAT, advanced collision resolution
+      // move player back by amount of overlap
+      this.x -= hitData.overlap * hitData.nx;
+    } else { // MBR, simple collision resolution
+      // move player to previous position
+      this.x = evt._x;
+    }
+  }
 })
 }
 
@@ -263,7 +320,6 @@ function deathAnimation(x,y){
       this.animationSpeed = 3
       if (!this.isPlaying("pow")) this.destroy()
     })
-  console.log(score)
 }
 
 /**
@@ -274,42 +330,65 @@ function makeEnemy(){
   xPos = Math.floor(Math.random() * 8 ) + 1
   a = Math.floor(Math.random() * 5 ) //xPos Enemy Spritesheet
   b = Math.floor(Math.random() * 10 ) + 5 //yPos Enemy Spritesheet
-  c = Math.floor(Math.random()*7) //xPos Bubble Spritesheet
-  enemy = Crafty.e("2D, Canvas, enemy_start, SpriteAnimation, Scrolling, Enemy, Collision")
-  .attr({x: xPos*64, y: 11*64, z:1, dead: false})
+  
+  enemy = Crafty.e("2D, Canvas, enemy_start, Bubble, SpriteAnimation, Scrolling, Tween, Enemy, Collision")
+  .attr({x: xPos*64, y: 11*64, z:1, scrollSpeed: 1, pushed: 0})
   .reel("walk", 1000, a, b, 1)
   .animate("walk")
   .collision(26,16,26,48,48,48,48,16)
-  .onHit("Player", function(){
-    if (billie.state.slay) {
-      if (!this.dead) {
-        this.timeout(function() {
-          deathAnimation(this._x, this._y);
-          this.destroy()
-        }, 100);
-      this.dead = true;
-      score +=1;
-      }
-      
-      
-    }
-    else (this.y += 40)
+  .onHit("Player", function(evt, first){ //first is true if this is the first collision
+    if (billie.state.slay && first) {
+      this.timeout(function() {
+        deathAnimation(this._x, this._y);
+        this.destroy()
+      }, 100);
+    score+=1
+    } else this.tween({y: this.y+40}, 100);this.pushed +=1;
   })
   .Scrolling()
-  .attach(Crafty.e("2D, Canvas, bubble_1, SpriteAnimation, Scrolling, Enemy, Collision")
-  .attr({x: xPos*64, y: 10*64, z:1, w:64, h:64})
-  .reel("1", 1000, c, 0, 1)
-  .animate("1"))
-
-  /*
-  b = Math.floor(Math.random()*7)
-  bubble = Crafty.e("2D, Canvas, bubble_1, SpriteAnimation, Scrolling, Enemy, Collision")
-  .attr({x: xPos*64, y: 10*64, z:1, w:64, h:64})
-  .reel("1", 1000, b, 0, 1)
-  .animate("1")
-  .Scrolling();
-  */
 }
+
+function makeBoss(){
+  billie.twoway(1)
+  setTimeout(()=>billie.twoway(200), 9000)
+
+  clearInterval(enemyTrigger)
+  boss = Crafty.e("2D, Canvas, Color, Collision, Tween, Solid, Boss, Scrolling")
+  .attr(({x: 510, y: 11*64, w:64, h:128, z:1, health: 10, dead: false, scrollSpeed: 1}))
+  .Scrolling()
+  .color("#FF0")
+  .bind("EnterFrame", function(){
+    if (this.y == billie.y-100) {
+      this.scrollSpeed = 0;
+      this.tween({x: 505, y:billie.y}, 2000) // auf höhe Billie bewegen
+    } else if (this.x < 506) {  // wenn bei 505 heranfahren
+      this.tween({x: Math.max(billie.x+48, 128)}, 400)
+    }
+  })
+  /*.onHit("Player", function(evt, first){
+    console.log("boss hit billie")
+    if (billie.state.slay && first) {
+      if (this.health > 0){
+        this.health -= 1
+      } else if (!this.dead){
+        this.timeout(function() {
+        deathAnimation(this._x, this._y);
+        this.destroy()
+        }, 100);
+        this.dead = true;
+        bossLevel = false;
+        score +=100;
+        enemyTrigger = setInterval(makeEnemy,700 + Math.floor(Math.random() * 500 ) )
+      }
+    }
+  }) // END ONHIT*/
+  
+  Crafty.e("2D, Canvas, Color")
+    .attr({x:boss.x, y: boss.y, z: 2, w: boss.health, h: 5})
+    .color("#F00")
+    .bind("EnterFrame", function(){this.w = 10*boss.health, this.x = boss.x, this.y=boss.y})
+}
+
 /**
  * Returns a "LeftHouse" Entity
  *
@@ -318,8 +397,8 @@ function makeEnemy(){
  */
 function makeLeftHouse(i,j){
   colNum = ( Math.floor(Math.random() * 2) )
-  Crafty.e("2D, Canvas, Color, LeftHouse, Scrolling")
-      .attr({x: i*64, y: j*64, w:64, h:64}).color(cols[colNum])
+  Crafty.e("2D, Canvas, Color, Solid, Scrolling")
+      .attr({x: i*64, y: j*64, w:64, h:64, scrollSpeed: 1}).color(cols[colNum])
       .Scrolling()
 }
 
@@ -331,8 +410,8 @@ function makeLeftHouse(i,j){
  */
 function makeRightHouse(i,j){
   colNum = ( Math.floor(Math.random() * 2) )
-  Crafty.e("2D, Canvas, Color, RightHouse, Scrolling")
-    .attr({x: i*64, y: j*64, w:64, h:64}).color(cols[colNum])
+  Crafty.e("2D, Canvas, Color,  Solid, Scrolling")
+    .attr({x: i*64, y: j*64, w:64, h:64, scrollSpeed: 1}).color(cols[colNum])
     .Scrolling();
 }
 
@@ -345,7 +424,7 @@ function makeRightHouse(i,j){
 function makeStreet(i,j){
   colNum = ( Math.floor(Math.random() * 2) + 2)
   Crafty.e("2D, Canvas, Color, Street, Scrolling")
-    .attr({x: i*64, y: j*64, w:64, h:64})
+    .attr({x: i*64, y: j*64, w:64, h:64, scrollSpeed: 1})
     .color(cols[colNum])
     .Scrolling();
 }
@@ -434,25 +513,16 @@ Crafty.scene("main", function(){
     Crafty.e("MobileRight")
     Crafty.e("MobileSlay")
     }
-    setInterval(function(){makeEnemy()},700 + Math.floor(Math.random() * 500 ) )
 
+    //setTimeout(makeBoss, 0)
+    // MAKE ENEMIES
+    enemyTrigger = setInterval(makeEnemy,700 + Math.floor(Math.random() * 500 ) )
+    
+    //setTimeout(makeBoss(), 30000)
     //timer just for development, delete later
     setInterval(function(){time +=1}, 1000)
+
 }); // END MAIN SCENE
-
-/* COPY OF MAIN SCENE DURING MOBILE INTERFACE DEVELOPMENT
-// Main Scene --- MAIN SCENE!!! ---
-Crafty.scene("main", function(){
-  generateWorld();
-  makeBillie();
-  Crafty.e("Score")
-  setInterval(function(){makeEnemy()},700 + Math.floor(Math.random() * 500 ) )
-
-  //timer just for development, delete later
-  setInterval(function(){time +=1}, 1000)
-}); // END MAIN SCENE
-*/
-
 
 // START THE GAAAAAAME
 Crafty.scene("loading");
